@@ -1,12 +1,9 @@
 import type { JWTPayload } from "jose";
 import { hasRole } from "./auth/tideJWT";
+import { COMMITTEE_GROUP, MAX_CIPHERTEXT, REPORTER_ROLE } from "./constants";
 import type { PolicyName } from "./store";
 
-export const INBOX_RECORD = "safevoice-inbox";
-export const COMMITTEE_GROUP = "/committee";
-export const REPORTER_ROLE = "reporter";
-export const IT_ADMIN_ROLE = "it-admin";
-export const MAX_CIPHERTEXT = 1_000_000;
+export { COMMITTEE_GROUP, INBOX_RECORD, IT_ADMIN_ROLE, MAX_CIPHERTEXT, REPORTER_ROLE } from "./constants";
 
 // What each signed policy must say. `roles` is JSON written as a string, as relationship.ts signs it.
 export const POLICY_SPEC: Record<PolicyName, { subjectType: "Role" | "Group"; subjectId: string; roles: string }> = {

@@ -1,8 +1,8 @@
 import { Providers } from "./providers";
 
 export const metadata = {
-  title: "Tide E2EE Vault",
-  description: "End-to-end encrypted vault powered by Tide",
+  title: "SafeVoice",
+  description: "Confidential reports only an independent committee can open",
 };
 
 export default function RootLayout({

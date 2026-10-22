@@ -1,53 +1,20 @@
 "use client";
 
-import { useTideCloak } from "@tidecloak/nextjs";
+import { Shell, s } from "./ui";
 
 export default function HomePage() {
-  const { authenticated, getValueFromIdToken, login, logout, isInitializing } =
-    useTideCloak();
-
-  if (isInitializing) {
-    return <p>Loading...</p>;
-  }
-
-  if (!authenticated) {
-    return (
-      <div style={{ maxWidth: 480, margin: "4rem auto", textAlign: "center" }}>
-        <h1>Tide E2EE Vault</h1>
-        <p style={{ color: "#999", marginBottom: "2rem" }}>
-          End-to-end encrypted secrets. Only you can decrypt your data.
-        </p>
-        <button onClick={login} style={btnStyle}>
-          Login with Tide
-        </button>
-      </div>
-    );
-  }
-
   return (
-    <div style={{ maxWidth: 480, margin: "4rem auto", textAlign: "center" }}>
-      <h1>Tide E2EE Vault</h1>
-      <p>Welcome, {getValueFromIdToken("preferred_username")}</p>
-      <nav style={{ display: "flex", gap: "1rem", justifyContent: "center", marginTop: "1rem" }}>
-        <a href="/vault" style={btnStyle}>
-          Open Vault
-        </a>
-        <button onClick={logout} style={{ ...btnStyle, background: "#333" }}>
-          Logout
-        </button>
-      </nav>
-    </div>
+    <Shell title="SafeVoice">
+      <p>
+        Report harassment, discrimination or a safety problem knowing that only the independent committee can read it.
+        Your report is encrypted in your browser. University IT, the platform and anyone who breaks into the server see
+        only scrambled data, and nobody can add themselves to the committee without other admins approving.
+      </p>
+      <div style={s.card}>
+        <p style={{ marginTop: 0 }}><a href="/report" style={s.navLink}>File a confidential report</a>: your name is optional and only the committee can see it.</p>
+        <p><a href="/committee" style={s.navLink}>Committee</a>: read reports (committee members only).</p>
+        <p style={{ marginBottom: 0 }}><a href="/server-view" style={s.navLink}>What the server sees</a> and <a href="/admin" style={s.navLink}>Admin</a>: for university IT.</p>
+      </div>
+    </Shell>
   );
 }
-
-const btnStyle: React.CSSProperties = {
-  background: "#2563eb",
-  color: "#fff",
-  border: "none",
-  borderRadius: 6,
-  padding: "0.75rem 1.5rem",
-  fontSize: "1rem",
-  cursor: "pointer",
-  textDecoration: "none",
-  display: "inline-block",
-};
