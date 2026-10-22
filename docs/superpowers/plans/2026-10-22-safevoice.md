@@ -225,7 +225,7 @@ test("anything else is shown as-is", () =>
 - Create: `docs/SETUP.md` (prerequisites, `.env` keys without values, the Git Bash init command, the accounts and grants from Task 5, `npm run dev`, `npx vitest run`)
 
 - [ ] **Step 1:** Run `bash .tide-pack/templates/shared/tide-doctor.sh` and `bash .tide-pack/templates/shared/tide-doctor.sh --url http://localhost:3000` → Expected: `RESULT: OK` both. Run `npx vitest run` → all pass.
-- [ ] **Step 2:** Run `git ls-files | grep -E "\.env$|tidecloak\.json|store\.json|keycloakdb|\.tide-pack"` → Expected: no output. Run `git grep -n "@gmail.com"` → Expected: no output.
+- [ ] **Step 2:** Run `git ls-files | grep -E "\.env$|tidecloak\.json|store\.json|keycloakdb|\.tide-pack"` → Expected: no output. Run `(set -a; . ./.env; git grep -nF "$TIDE_LICENSE_EMAIL")` → Expected: no output (the licence email appears in no tracked file).
 - [ ] **Step 3:** Commit `docs: setup guide`, tag `c2-freeze`, push with `--tags`. Tell C and D the app is frozen for recording.
 
 ### Task 7 (C): README project overview
