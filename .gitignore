@@ -16,3 +16,4 @@ data/keycloakdb*
 data/store.json
 .superpowers/
 tsconfig.tsbuildinfo
+next-env.d.ts
