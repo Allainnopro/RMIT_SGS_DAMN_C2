@@ -3,19 +3,13 @@
 import { useTideCloak } from "@tidecloak/nextjs";
 import { useCallback, useEffect, useState } from "react";
 import { INBOX_RECORD } from "@/lib/constants";
+import { parseReport, type Report } from "@/lib/report";
 import { decryptForRecord } from "@/lib/tide/relationship";
 import { describeTideError } from "@/lib/tideErrors";
 import { Scramble } from "../effects";
 import { Icon } from "../icons";
 import { Alert, api, Shell } from "../ui";
 
-interface Report {
-  category: string;
-  description: string;
-  when?: string;
-  where?: string;
-  contact?: { name?: string; contact?: string };
-}
 interface Shown {
   id: string;
   createdAt: string;
@@ -49,7 +43,7 @@ export default function CommitteePage() {
       // Decrypted here, in the committee member's browser. The server only ever had ciphertext.
       setItems(await Promise.all(newest.map(async ({ id, createdAt, ciphertext }) => {
         try {
-          return { id, createdAt, report: JSON.parse(await decryptForRecord(ciphertext, INBOX_RECORD, policy)) as Report };
+          return { id, createdAt, report: parseReport(await decryptForRecord(ciphertext, INBOX_RECORD, policy)) };
         } catch (err) {
           return { id, createdAt, error: describeTideError(err) };
         }

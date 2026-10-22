@@ -74,7 +74,8 @@ create_user() { # USERNAME   (join the committee separately with --committee-gro
   echo "create $1${2:+ in $2}: HTTP $(api POST "/users" "$body")"
 }
 invite() { # USER_ID -> Tide account invite link, valid 12 h
-  curl -s -X POST "$URL/admin/realms/$REALM/tideAdminResources/get-required-action-link?userId=$1&lifespan=43200" \n    -H "Authorization: Bearer $(token)" -H "Content-Type: application/json" -d '["link-tide-account-action"]'
+  curl -s -X POST "$URL/admin/realms/$REALM/tideAdminResources/get-required-action-link?userId=$1&lifespan=43200" \
+    -H "Authorization: Bearer $(token)" -H "Content-Type: application/json" -d '["link-tide-account-action"]'
   echo
 }
 committee() { # USER_ID

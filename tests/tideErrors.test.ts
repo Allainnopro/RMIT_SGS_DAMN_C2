@@ -15,6 +15,12 @@ test("a refusal carried in err.cause also reads as no access", () => {
   expect(describeTideError(err)).toBe("You don't have access to these reports.");
 });
 
+test("a node outage reads as a network problem, not as no access", () => {
+  const ork3 =
+    "TideError[TIDE-TIDEJS-NET-THRESHOLD_FAILURE]: Could not reach enough VVK ORKs (got 19 of 20 required, 1 of 20 failed) source: Tools/Utils.ts:PromiseRace details: 1 underlying failure(s): - https://ork3.tideprotocol.com/Authentication/Key/v1/PreSign?vuid=b1f7 [TIDE-TIDEJS-NET-FETCH_FAILED] Network request failed cause: TideError: Network request failed";
+  expect(describeTideError(new Error(ork3))).toBe("Tide's network didn't answer just now. Please try again in a minute.");
+});
+
 test("anything else is shown as-is", () => {
   expect(describeTideError(new Error("boom"))).toBe("boom");
   expect(describeTideError("plain string")).toBe("plain string");
