@@ -93,9 +93,14 @@ export default function AdminPage() {
                     {status[name] === "waiting" && <span className="muted"> · waiting for your approval</span>}
                   </span>
                 </span>
-                {status[name] !== "done" && (
+                {status[name] === "waiting" ? (
+                  // The enclave may never answer (window closed, Tide node down): let the admin start over.
+                  <button onClick={() => setStatus((s) => ({ ...s, [name]: "idle" }))} className="btn btn-quiet btn-sm">
+                    <span className="spinner" aria-hidden="true" />Waiting for approval · Cancel
+                  </button>
+                ) : status[name] !== "done" && (
                   <button onClick={() => sign(name)} disabled={!prep || busy} className="btn btn-primary btn-sm magnetic">
-                    {status[name] === "waiting" ? <><span className="spinner" aria-hidden="true" />Approving…</> : <><Icon name="key" size={16} />{prep ? "Sign" : "Preparing…"}</>}
+                    <Icon name="key" size={16} />{prep ? "Sign" : "Preparing…"}
                   </button>
                 )}
               </li>
