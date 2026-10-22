@@ -2,10 +2,11 @@
 
 import { IAMService } from "@tidecloak/js";
 import { useTideCloak } from "@tidecloak/nextjs";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { usePointerEffects } from "./effects";
+import { usePointerEffects, useSmoothScroll } from "./effects";
 import { Icon, type IconName } from "./icons";
 
 /** Calls our API. secureFetch attaches the token AND the DPoP proof our routes verify. */
@@ -137,19 +138,30 @@ function Account() {
 export function Chrome({ children }: { children: React.ReactNode }) {
   const path = usePathname();
   usePointerEffects();
+  useSmoothScroll(path);
   return (
     <>
+      <div className="intro" aria-hidden="true">
+        <div className="intro-inner">
+          <Image src="/logo.png" alt="" width={96} height={96} priority />
+          <span className="intro-word">
+            {[..."SafeVoice"].map((c, i) => <span key={i} style={{ "--i": i } as React.CSSProperties}>{c}</span>)}
+          </span>
+        </div>
+      </div>
       <div className="aurora" aria-hidden="true">
         <span className="blob b1" />
         <span className="blob b2" />
         <span className="blob b3" />
       </div>
+      <div className="progress" aria-hidden="true" />
+      <div className="cursor" aria-hidden="true" />
       <div className="app">
         <a href="#main" className="skip-link">Skip to content</a>
         <header className="topbar">
-          <div className="container topbar-inner" style={{ maxWidth: 1180 }}>
+          <div className="container topbar-inner" style={{ maxWidth: 1240 }}>
             <Link href="/" className="brand">
-              <span className="brand-mark"><Icon name="shield" size={18} /></span>
+              <Image src="/logo.png" alt="" width={38} height={38} priority />
               SafeVoice
             </Link>
             <Nav path={path} />
@@ -159,8 +171,11 @@ export function Chrome({ children }: { children: React.ReactNode }) {
         </header>
         <main id="main" className="container page">{children}</main>
         <footer className="container footer">
-          <Icon name="lock" size={14} />
-          Protected by TideCloak. No single admin holds the keys.
+          <div className="footer-row">
+            <span><Icon name="lock" size={14} />Protected by TideCloak. No single admin holds the keys.</span>
+            <span>RMIT Hackathon 2026 · Team DAMN</span>
+          </div>
+          <span className="wordmark" aria-hidden="true">SafeVoice</span>
         </footer>
       </div>
     </>
