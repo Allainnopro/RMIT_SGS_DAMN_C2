@@ -1,0 +1,4 @@
+* text=auto eol=lf
+# byte-exact: the Tide enclave integrity-checks this page
+public/tide_dpop_auth.html -text
+*.mp4 binary
