@@ -142,6 +142,7 @@ a { color: var(--accent-text); text-underline-offset: 3px; }
   border-radius: 12px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.03);
   color: var(--fg-soft); font: 500 0.85rem var(--font-mono); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+.dot.dot-pending { background: #fbbf24; box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.18); animation: breathe 1.2s ease-in-out infinite; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: #34d399; box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.18); flex: none; }
 
 /* ---------- page ---------- */

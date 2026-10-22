@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Icon, type IconName } from "./icons";
 import { Shell } from "./ui";
 
@@ -43,8 +44,8 @@ export default function HomePage() {
             you are reporting to. Your name is optional, and stays sealed if you include it.
           </p>
           <div className="row rise" style={{ "--i": 3 } as React.CSSProperties}>
-            <a href="/report" className="btn btn-primary magnetic">File a confidential report <Icon name="arrowRight" size={18} /></a>
-            <a href="/committee" className="btn btn-ghost">Committee inbox</a>
+            <Link href="/report" className="btn btn-primary magnetic">File a confidential report <Icon name="arrowRight" size={18} /></Link>
+            <Link href="/committee" className="btn btn-ghost">Committee inbox</Link>
           </div>
         </div>
         <VaultOrb />

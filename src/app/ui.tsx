@@ -2,8 +2,9 @@
 
 import { IAMService } from "@tidecloak/js";
 import { useTideCloak } from "@tidecloak/nextjs";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { usePointerEffects } from "./effects";
 import { Icon, type IconName } from "./icons";
 
@@ -27,7 +28,26 @@ const NAV: ReadonlyArray<readonly [string, string, IconName]> = [
 // Tide usernames are a 64-hex id; show a short, recognisable form.
 const shortUser = (u: string) => (/^[0-9a-f]{20,}$/i.test(u) ? `${u.slice(0, 6)}…${u.slice(-4)}` : u);
 
-/** One highlight that springs to the hovered or focused link, and back to the current page. */
+// The last signed-in name, shown while the SDK re-checks the session after a hard refresh. Display only:
+// what the user can do is still decided by the real session and the server.
+const USER_KEY = "safevoice.user";
+const readCachedUser = () => {
+  try {
+    return sessionStorage.getItem(USER_KEY) ?? "";
+  } catch {
+    return "";
+  }
+};
+const writeCachedUser = (u: string) => {
+  try {
+    if (u) sessionStorage.setItem(USER_KEY, u);
+    else sessionStorage.removeItem(USER_KEY);
+  } catch {
+    // storage blocked: the slot just shows the placeholder
+  }
+};
+
+/** One highlight that springs to the hovered or focused link, and slides to the new page on navigation. */
 function Nav({ path }: { path: string }) {
   const navRef = useRef<HTMLElement>(null);
   const [pill, setPill] = useState({ x: 0, y: 0, w: 0, h: 0, o: 0 });
@@ -40,15 +60,19 @@ function Nav({ path }: { path: string }) {
 
   useLayoutEffect(() => {
     place(current());
+  }, [path, place, current]);
+
+  useEffect(() => {
     // first placement happens without animation, so the highlight never flies in from the corner
-    const id = requestAnimationFrame(() => setReady(true));
+    // (a timer, not requestAnimationFrame: rAF never fires in a hidden or throttled tab)
+    const id = window.setTimeout(() => setReady(true), 60);
     const ro = new ResizeObserver(() => place(current()));
     if (navRef.current) ro.observe(navRef.current);
     return () => {
-      cancelAnimationFrame(id);
+      window.clearTimeout(id);
       ro.disconnect();
     };
-  }, [path, place, current]);
+  }, [place, current]);
 
   return (
     <nav ref={navRef} aria-label="Main" className="nav" onPointerLeave={() => place(current())} onBlur={() => place(current())}>
@@ -58,7 +82,7 @@ function Nav({ path }: { path: string }) {
         style={{ transform: `translate3d(${pill.x}px, ${pill.y}px, 0)`, width: pill.w, height: pill.h, opacity: pill.o }}
       />
       {NAV.map(([href, label, icon]) => (
-        <a
+        <Link
           key={href}
           href={href}
           className="nav-link"
@@ -68,9 +92,78 @@ function Nav({ path }: { path: string }) {
         >
           <Icon name={icon} size={16} />
           {label}
-        </a>
+        </Link>
       ))}
     </nav>
+  );
+}
+
+function Account() {
+  const { authenticated, isInitializing, login, logout, getValueFromIdToken } = useTideCloak();
+  const [cached, setCached] = useState("");
+  const user = authenticated ? String(getValueFromIdToken("preferred_username") ?? "") : "";
+
+  useEffect(() => setCached(readCachedUser()), []);
+  useEffect(() => {
+    if (!isInitializing) writeCachedUser(user);
+  }, [isInitializing, user]);
+
+  const name = isInitializing ? cached : user;
+  if (isInitializing && !name) return <span className="account-skel" aria-hidden="true" />;
+  if (!name) return <button onClick={login} className="btn btn-primary btn-sm">Sign in</button>;
+  return (
+    <>
+      <span className="user-chip" title={name} aria-busy={isInitializing}>
+        <span className={`dot${isInitializing ? " dot-pending" : ""}`} aria-hidden="true" />
+        <span className="sr-only">Signed in as </span>
+        {shortUser(name)}
+      </span>
+      <button
+        onClick={() => {
+          writeCachedUser("");
+          logout();
+        }}
+        disabled={isInitializing}
+        className="btn btn-quiet btn-sm"
+      >
+        <Icon name="logout" size={16} />
+        Sign out
+      </button>
+    </>
+  );
+}
+
+/** App frame, mounted once in the layout: it survives page changes, so the session never re-initialises on navigation. */
+export function Chrome({ children }: { children: React.ReactNode }) {
+  const path = usePathname();
+  usePointerEffects();
+  return (
+    <>
+      <div className="aurora" aria-hidden="true">
+        <span className="blob b1" />
+        <span className="blob b2" />
+        <span className="blob b3" />
+      </div>
+      <div className="app">
+        <a href="#main" className="skip-link">Skip to content</a>
+        <header className="topbar">
+          <div className="container topbar-inner" style={{ maxWidth: 1180 }}>
+            <Link href="/" className="brand">
+              <span className="brand-mark"><Icon name="shield" size={18} /></span>
+              SafeVoice
+            </Link>
+            <Nav path={path} />
+            {/* fixed-size slot: the bar keeps its shape while the session loads */}
+            <div className="account"><Account /></div>
+          </div>
+        </header>
+        <main id="main" className="container page">{children}</main>
+        <footer className="container footer">
+          <Icon name="lock" size={14} />
+          Protected by TideCloak. No single admin holds the keys.
+        </footer>
+      </div>
+    </>
   );
 }
 
@@ -83,23 +176,20 @@ type ShellProps = {
   children: React.ReactNode;
 };
 
-/** Page frame: aurora backdrop, top bar, sign-in gate for protected pages, then the page itself. */
+/** A page: waits for the session, shows the sign-in gate on protected pages, then the title and content. */
 export function Shell({ title, intro, eyebrow, actions, requireAuth = true, children }: ShellProps) {
-  const { authenticated, isInitializing, login, logout, getValueFromIdToken } = useTideCloak();
-  const path = usePathname();
-  const user = authenticated ? String(getValueFromIdToken("preferred_username") ?? "") : "";
-  usePointerEffects();
+  const { authenticated, isInitializing, login } = useTideCloak();
 
-  let body: React.ReactNode;
-  if (isInitializing) {
-    body = (
+  if (requireAuth && isInitializing) {
+    return (
       <div className="empty" aria-busy="true">
         <span className="spinner" aria-hidden="true" />
         <p>Connecting securely…</p>
       </div>
     );
-  } else if (requireAuth && !authenticated) {
-    body = (
+  }
+  if (requireAuth && !authenticated) {
+    return (
       <section className="card rise" style={{ maxWidth: 520, margin: "24px auto 0", textAlign: "center" }}>
         <div className="stack" style={{ justifyItems: "center" }}>
           <span className="icon-tile" style={{ width: 60, height: 60, borderRadius: 18 }}><Icon name="lock" size={26} /></span>
@@ -109,68 +199,20 @@ export function Shell({ title, intro, eyebrow, actions, requireAuth = true, chil
         </div>
       </section>
     );
-  } else {
-    body = (
-      <>
-        {title && (
-          <header className="page-head rise">
-            <div>
-              {eyebrow && <span className="eyebrow">{eyebrow}</span>}
-              <h1><span className="text-gradient">{title}</span></h1>
-              {intro && <p className="lead">{intro}</p>}
-            </div>
-            {actions}
-          </header>
-        )}
-        {children}
-      </>
-    );
   }
-
   return (
     <>
-      <div className="aurora" aria-hidden="true">
-        <span className="blob b1" />
-        <span className="blob b2" />
-        <span className="blob b3" />
-      </div>
-      <div className="app">
-        <a href="#main" className="skip-link">Skip to content</a>
-        <header className="topbar">
-          <div className="container topbar-inner" style={{ maxWidth: 1180 }}>
-            <a href="/" className="brand">
-              <span className="brand-mark"><Icon name="shield" size={18} /></span>
-              SafeVoice
-            </a>
-            <Nav path={path} />
-            {/* fixed-size slot: the bar keeps its shape while the session loads */}
-            <div className="account">
-              {isInitializing ? (
-                <span className="account-skel" aria-hidden="true" />
-              ) : authenticated ? (
-                <>
-                  <span className="user-chip" title={user}>
-                    <span className="dot" aria-hidden="true" />
-                    <span className="sr-only">Signed in as </span>
-                    {shortUser(user)}
-                  </span>
-                  <button onClick={logout} className="btn btn-quiet btn-sm">
-                    <Icon name="logout" size={16} />
-                    Sign out
-                  </button>
-                </>
-              ) : (
-                <button onClick={login} className="btn btn-primary btn-sm">Sign in</button>
-              )}
-            </div>
+      {title && (
+        <header className="page-head rise">
+          <div>
+            {eyebrow && <span className="eyebrow">{eyebrow}</span>}
+            <h1><span className="text-gradient">{title}</span></h1>
+            {intro && <p className="lead">{intro}</p>}
           </div>
+          {actions}
         </header>
-        <main id="main" className="container page">{body}</main>
-        <footer className="container footer">
-          <Icon name="lock" size={14} />
-          Protected by TideCloak. No single admin holds the keys.
-        </footer>
-      </div>
+      )}
+      {children}
     </>
   );
 }
