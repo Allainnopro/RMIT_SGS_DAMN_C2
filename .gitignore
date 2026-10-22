@@ -17,3 +17,5 @@ data/store.json
 .superpowers/
 tsconfig.tsbuildinfo
 next-env.d.ts
+data/sim.json
+data/sim-network.json

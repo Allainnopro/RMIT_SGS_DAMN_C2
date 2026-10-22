@@ -1,0 +1,34 @@
+{
+  "realm": "safevoice",
+  "auth-server-url": "http://localhost:8080/",
+  "ssl-required": "placeholder",
+  "resource": "safevoice-client",
+  "public-client": true,
+  "confidential-port": 0,
+  "jwk": {
+    "keys": [
+      {
+        "kid": "placeholder",
+        "kty": "placeholder",
+        "alg": "placeholder",
+        "use": "placeholder",
+        "crv": "placeholder",
+        "x": "placeholder"
+      }
+    ]
+  },
+  "backgroundUrl": "placeholder",
+  "logoUrl": "placeholder",
+  "homeOrkUrl": "placeholder",
+  "vendorId": "placeholder",
+  "client-origin-auth-http://localhost:8080": "placeholder",
+  "client-origin-auth-http://localhost:3000": "placeholder",
+  "gVVK": "placeholder",
+  "vvkId": "placeholder",
+  "orkUrl": "placeholder",
+  "payerPublic": "placeholder",
+  "obfGVVK": "placeholder",
+  "gVRKCertificate": "placeholder",
+  "thresholdT": 14,
+  "thresholdN": 20
+}

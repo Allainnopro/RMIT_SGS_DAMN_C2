@@ -2,11 +2,18 @@ import { NextRequest } from "next/server";
 import { verifyTideJWT, hasRole, extractToken } from "./tideJWT";
 import { verifyDpop } from "./verifyDpop";
 import type { JWTPayload } from "jose";
+import { SIMULATED } from "../simPersonas";
+import { simIdentity } from "../simStore";
 
 type AuthHandler = (req: NextRequest, jwt: JWTPayload) => Promise<Response>;
 
 export function withAuth(handler: AuthHandler) {
   return async (req: NextRequest) => {
+    if (SIMULATED) {
+      // Plan C: the simulated Tide session stands in for the token; every role check below is unchanged.
+      const jwt = await simIdentity(req);
+      return jwt ? handler(req, jwt) : Response.json({ error: "Unauthorized" }, { status: 401 });
+    }
     try {
       const token = extractToken(req.headers.get("authorization"));
       const jwt = await verifyTideJWT(token);

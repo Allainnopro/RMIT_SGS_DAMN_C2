@@ -1,20 +1,21 @@
 "use client";
 
 import { IAMService } from "@tidecloak/js";
-import { useTideCloak } from "@tidecloak/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { SIMULATED } from "@/lib/simPersonas";
+import { useAuth } from "./auth";
 import { usePointerEffects, useSmoothScroll } from "./effects";
 import { Icon, type IconName } from "./icons";
 
 /** Calls our API. secureFetch attaches the token AND the DPoP proof our routes verify. */
 export async function api<T = Record<string, unknown>>(path: string, init: RequestInit = {}): Promise<{ status: number; data: T }> {
-  const res = await IAMService.secureFetch(new URL(path, window.location.origin).toString(), {
-    ...init,
-    headers: { "Content-Type": "application/json", ...init.headers },
-  });
+  const url = new URL(path, window.location.origin).toString();
+  const opts = { ...init, headers: { "Content-Type": "application/json", ...init.headers } };
+  // Plan C: the simulated session is an HttpOnly cookie, which the browser sends by itself.
+  const res = SIMULATED ? await fetch(url, opts) : await IAMService.secureFetch(url, opts);
   const text = await res.text();
   return { status: res.status, data: (text ? JSON.parse(text) : {}) as T };
 }
@@ -100,7 +101,7 @@ function Nav({ path }: { path: string }) {
 }
 
 function Account() {
-  const { authenticated, isInitializing, login, logout, getValueFromIdToken } = useTideCloak();
+  const { authenticated, isInitializing, login, logout, getValueFromIdToken } = useAuth();
   const [cached, setCached] = useState("");
   const user = authenticated ? String(getValueFromIdToken("preferred_username") ?? "") : "";
 
@@ -169,6 +170,13 @@ export function Chrome({ children }: { children: React.ReactNode }) {
             <div className="account"><Account /></div>
           </div>
         </header>
+        {SIMULATED && (
+          <p className="sim-bar">
+            <span className="badge">Plan C</span>
+            Simulated TideCloak: Tide&apos;s network is under heavy load, so sign-in, roles and the threshold network are
+            simulated here. The access rules are the same.
+          </p>
+        )}
         <main id="main" className="container page">{children}</main>
         <footer className="container footer">
           <div className="footer-row">
@@ -193,7 +201,7 @@ type ShellProps = {
 
 /** A page: waits for the session, shows the sign-in gate on protected pages, then the title and content. */
 export function Shell({ title, intro, eyebrow, actions, requireAuth = true, children }: ShellProps) {
-  const { authenticated, isInitializing, login } = useTideCloak();
+  const { authenticated, isInitializing, login } = useAuth();
 
   if (requireAuth && isInitializing) {
     return (

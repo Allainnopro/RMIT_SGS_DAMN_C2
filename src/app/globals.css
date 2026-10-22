@@ -489,3 +489,19 @@ details > summary::-webkit-details-marker { display: none; }
   .intro { display: none; }
   .marquee-track { animation: none; }
 }
+
+/* ---------- Plan C: simulated TideCloak ---------- */
+.sim-bar {
+  position: relative; z-index: 2; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 10px;
+  margin: 0; padding: 8px 16px; text-align: center; font-size: 0.84rem; color: #134e4a;
+  background: linear-gradient(90deg, var(--mint-soft), #e6fbf5, var(--mint-soft)); border-bottom: 1px solid var(--line);
+}
+.persona-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+@media (min-width: 760px) { .persona-grid { grid-template-columns: repeat(2, 1fr); } }
+.persona { display: flex; gap: 14px; align-items: flex-start; width: 100%; text-align: left; cursor: pointer; font: inherit; color: inherit; }
+.persona:disabled { cursor: progress; opacity: 0.7; }
+.request { justify-content: space-between; align-items: center; flex-wrap: wrap; padding: 14px 16px; border-radius: var(--radius); background: var(--mint-soft); border: 1px solid var(--line); }
+.quorum { display: inline-flex; align-items: center; gap: 6px; }
+.quorum > span:not(.small) { width: 22px; height: 8px; border-radius: 999px; background: #d3e7e3; transition: background-color 300ms linear, transform 420ms var(--spring); }
+.quorum > span.on { background: var(--teal); transform: scaleY(1.25); }
+select.input { appearance: auto; cursor: pointer; }

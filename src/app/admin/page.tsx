@@ -1,12 +1,14 @@
 "use client";
 
 import { IAMService } from "@tidecloak/js";
-import { useTideCloak } from "@tidecloak/nextjs";
 import { useEffect, useState } from "react";
 import { COMMITTEE_GROUP, INBOX_RECORD, REPORTER_ROLE } from "@/lib/constants";
+import { SIMULATED } from "@/lib/simPersonas";
 import { describeRelationshipPolicy, signRelationshipPolicy } from "@/lib/tide/relationship";
 import { Icon } from "../icons";
+import { useAuth } from "../auth";
 import { Alert, api, Shell } from "../ui";
+import { SimAdmin } from "./SimAdmin";
 
 // P1: reporters may only write into the inbox. P2: committee members may only read it.
 const GRANTS = [
@@ -26,7 +28,11 @@ const describe = (err: unknown) => {
 };
 
 export default function AdminPage() {
-  const { authenticated } = useTideCloak();
+  return SIMULATED ? <SimAdmin /> : <LiveAdmin />;
+}
+
+function LiveAdmin() {
+  const { authenticated } = useAuth();
   const [prep, setPrep] = useState<{ vendorId: string; adminPolicy: Uint8Array } | null>(null);
   const [prepError, setPrepError] = useState("");
   const [status, setStatus] = useState<Partial<Record<GrantName, Status>>>({});

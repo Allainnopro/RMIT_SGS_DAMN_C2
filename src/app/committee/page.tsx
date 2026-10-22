@@ -1,14 +1,13 @@
 "use client";
 
-import { useTideCloak } from "@tidecloak/nextjs";
 import { useCallback, useEffect, useState } from "react";
-import { INBOX_RECORD } from "@/lib/constants";
 import { parseReport, type Report } from "@/lib/report";
-import { decryptForRecord } from "@/lib/tide/relationship";
 import { describeTideError } from "@/lib/tideErrors";
 import { Scramble } from "../effects";
 import { Icon } from "../icons";
+import { useAuth } from "../auth";
 import { Alert, api, Shell } from "../ui";
+import { opener } from "../vault";
 
 interface Shown {
   id: string;
@@ -23,7 +22,7 @@ interface Stored {
 }
 
 export default function CommitteePage() {
-  const { authenticated } = useTideCloak();
+  const { authenticated } = useAuth();
   const [items, setItems] = useState<Shown[] | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,15 +34,12 @@ export default function CommitteePage() {
       const r = await api<{ reports?: Stored[]; error?: string }>("/api/reports");
       if (r.status === 403) return setError("This page is for committee members.");
       if (r.status !== 200 || !r.data.reports) throw new Error(r.data.error ?? `Could not load reports (${r.status}).`);
-      const p = await api<{ policy?: string; error?: string }>("/api/policies/inbox-read");
-      if (p.status === 404) return setError("SafeVoice isn't set up yet: an admin must approve the inbox policies.");
-      if (p.status !== 200 || !p.data.policy) throw new Error(p.data.error ?? `Could not load the committee policy (${p.status}).`);
-      const policy = p.data.policy;
+      const open = await opener();
       const newest = [...r.data.reports].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
       // Decrypted here, in the committee member's browser. The server only ever had ciphertext.
       setItems(await Promise.all(newest.map(async ({ id, createdAt, ciphertext }) => {
         try {
-          return { id, createdAt, report: parseReport(await decryptForRecord(ciphertext, INBOX_RECORD, policy)) };
+          return { id, createdAt, report: parseReport(await open(ciphertext)) };
         } catch (err) {
           return { id, createdAt, error: describeTideError(err) };
         }

@@ -1,14 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { INBOX_RECORD } from "@/lib/constants";
-import { encryptForRecord } from "@/lib/tide/relationship";
 import { describeTideError } from "@/lib/tideErrors";
 import { Icon } from "../icons";
 import { Alert, api, Shell } from "../ui";
+import { sealer } from "../vault";
 
 const CATEGORIES = ["Harassment", "Discrimination", "Safety hazard", "Misconduct", "Other"];
-const NOT_SET_UP = "SafeVoice isn't set up yet: an admin must approve the inbox policies.";
 const MAX_DESCRIPTION = 10_000; // keeps the encrypted report well under the server's size limit
 
 export default function ReportPage() {
@@ -29,13 +27,9 @@ export default function ReportPage() {
     setBusy(true);
     setError("");
     try {
-      const p = await api<{ policy?: string; error?: string }>("/api/policies/inbox-write");
-      if (p.status === 404) throw new Error(NOT_SET_UP);
-      if (p.status === 403) throw new Error("Your account can't file reports yet: it needs the reporter role.");
-      if (p.status !== 200 || !p.data.policy) throw new Error(p.data.error ?? `Could not load the inbox policy (${p.status}).`);
-
+      const seal = await sealer();
       const report = { category, description, when, where, ...(withContact ? { contact: { name, contact } } : {}) };
-      const ciphertext = await encryptForRecord(JSON.stringify(report), INBOX_RECORD, p.data.policy);
+      const ciphertext = await seal(JSON.stringify(report));
 
       const r = await api<{ id?: string; error?: string }>("/api/reports", { method: "POST", body: JSON.stringify({ ciphertext }) });
       if (r.status !== 201 || !r.data.id) throw new Error("Not saved, please try again.");

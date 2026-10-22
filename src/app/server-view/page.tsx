@@ -1,8 +1,8 @@
 "use client";
 
-import { useTideCloak } from "@tidecloak/nextjs";
 import { useEffect, useState } from "react";
 import { Icon } from "../icons";
+import { useAuth } from "../auth";
 import { Alert, api, Shell } from "../ui";
 
 interface StoreView {
@@ -11,7 +11,7 @@ interface StoreView {
 }
 
 export default function ServerViewPage() {
-  const { authenticated } = useTideCloak();
+  const { authenticated } = useAuth();
   const [store, setStore] = useState<StoreView | null>(null);
   const [error, setError] = useState("");
 
