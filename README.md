@@ -20,15 +20,44 @@ A student harassed by a staff member can report it knowing that university IT, f
 
 ### 4. Why TideCloak matters
 
-Each report is encrypted in the reporter's browser under a TideCloak policy using the built-in `RelationshipAttestation:1` contract. Reporters may only write to the inbox; only members of the `/committee` group may decrypt it. Tide's network enforces this at decryption, so our server holds no key. Changing committee membership is a TideCloak change request that needs a quorum of admins, so no single admin can let themselves in.
+Each report is encrypted in the reporter's browser under a TideCloak policy (the built-in `RelationshipAttestation:1` contract): reporters may only write to the inbox, and only members of the `/committee` group may decrypt it. Tide's threshold network enforces this at decryption, so our server never holds a key. Changing committee membership is a TideCloak change request that needs a quorum of admins, so no single admin can let themselves in.
 
 ### 5. Prototype & storytelling
 
-Watch a report written in Vietnamese travel from a reporter's browser to the committee's, while "What the server sees" shows only ciphertext. A reporter trying to read reports is refused by the network, and an IT admin's request to join the committee waits for approvals that never come.
+Tide's network was under heavy load during the hackathon, so, following Tide's Plan C, the demo simulates TideCloak's sign-in, roles and threshold network; the server enforces the same rules. Watch a report sealed in the reporter's browser, the server's view showing only ciphertext, and the committee opening it. Then an IT admin proposes adding themselves to the committee: one approval changes nothing, and they stay locked out until a second admin agrees.
 
-## Setup
+## How the Plan C simulation maps to TideCloak
 
-See [docs/SETUP.md](docs/SETUP.md).
+| Live TideCloak (code in this repo) | Plan C simulation (`NEXT_PUBLIC_TIDE_MODE=simulated`) |
+|---|---|
+| Tide sign-in; DPoP-bound JWTs verified by `src/lib/auth/` | Persona picker; an HMAC-signed session the server verifies, carrying the same role and group claims |
+| Inbox policies signed on Tide's network; `encryptForRecord` / `decryptForRecord` in `src/lib/tide/relationship.ts` | Reports AES-GCM sealed in the browser; each report key is wrapped for a simulated network that unwraps it only for `/committee` members (`src/app/vault.ts`, `src/app/api/sim/network`) |
+| IGA change requests approved in the Tide enclave | Committee changes need 2 of 3 IT admins (`src/lib/sim.ts`, tested in `tests/sim.test.ts`) |
+
+Every API route keeps its role and group checks in both modes. Only who vouches for the identity changes.
+
+## Quick start (simulated, no TideCloak needed)
+
+```bash
+npm install
+mkdir -p data
+cp scripts/tidecloak.placeholder.json data/tidecloak.json   # only if you have no real adapter file
+echo NEXT_PUBLIC_TIDE_MODE=simulated > .env.local
+npm run dev
+```
+
+Open http://localhost:3000, click **Sign in** and pick a persona:
+
+1. **reporter1** files a report.
+2. **admin1** opens *Server view* (ciphertext only) and *Committee* (refused). On *Admin*, propose adding admin1 to the committee and approve: 1 of 2, still refused.
+3. **admin2** approves: the change applies.
+4. **committee1** opens *Committee* and reads the report, decrypted in the browser.
+
+Run the tests with `npm test`.
+
+## Live TideCloak
+
+Leave `NEXT_PUBLIC_TIDE_MODE` unset and follow [docs/SETUP.md](docs/SETUP.md). The live integration (Tide sign-in, DPoP, account linking, enclave approvals, signed inbox policies) is built. During the hackathon Tide's network failed at policy signing, which is why the demo uses Plan C.
 
 ## Demo video
 
