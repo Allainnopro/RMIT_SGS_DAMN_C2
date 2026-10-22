@@ -5,7 +5,8 @@ import { useCallback, useEffect, useState } from "react";
 import { INBOX_RECORD } from "@/lib/constants";
 import { decryptForRecord } from "@/lib/tide/relationship";
 import { describeTideError } from "@/lib/tideErrors";
-import { api, Shell, s } from "../ui";
+import { Icon } from "../icons";
+import { Alert, api, Shell } from "../ui";
 
 interface Report {
   category: string;
@@ -30,9 +31,11 @@ export default function CommitteePage() {
   const { authenticated } = useTideCloak();
   const [items, setItems] = useState<Shown[] | null>(null);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const load = useCallback(async () => {
     setError("");
+    setLoading(true);
     try {
       const r = await api<{ reports?: Stored[]; error?: string }>("/api/reports");
       if (r.status === 403) return setError("This page is for committee members.");
@@ -52,6 +55,8 @@ export default function CommitteePage() {
       })));
     } catch (err) {
       setError(describeTideError(err));
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -60,25 +65,59 @@ export default function CommitteePage() {
   }, [authenticated, load]);
 
   return (
-    <Shell title="Committee inbox">
-      <p style={s.muted}>Reports are decrypted in this browser by the Tide network, only for members of the committee.</p>
-      {error && <p role="alert" style={s.error}>{error}</p>}
-      {items?.length === 0 && <p>No reports yet.</p>}
-      {items?.map((it) => (
-        <article key={it.id} style={s.card}>
-          <p style={{ ...s.muted, marginTop: 0 }}>Receipt {it.id} · {new Date(it.createdAt).toLocaleString()}</p>
-          {it.error ? <p style={s.error}>{it.error}</p> : it.report && (
-            <>
-              <h2 style={{ margin: "0 0 0.5rem" }}>{it.report.category}</h2>
-              <p style={{ whiteSpace: "pre-wrap" }}>{it.report.description}</p>
-              {(it.report.when || it.report.where) && <p style={s.muted}>{[it.report.when, it.report.where].filter(Boolean).join(" · ")}</p>}
-              <p style={{ marginBottom: 0 }}>
-                {it.report.contact ? `Reporter: ${it.report.contact.name || "(no name)"} · ${it.report.contact.contact || "(no contact)"}` : "No name given: anonymous to the committee."}
-              </p>
-            </>
-          )}
-        </article>
-      ))}
+    <Shell
+      title="Committee inbox"
+      eyebrow="Committee"
+      intro="Reports are decrypted in this browser, and the Tide network only helps members of the committee."
+      actions={
+        <button onClick={load} disabled={loading} className="btn btn-ghost btn-sm">
+          {loading ? <span className="spinner" aria-hidden="true" /> : <Icon name="refresh" size={16} />}
+          Refresh
+        </button>
+      }
+    >
+      <div className="stack" aria-live="polite" aria-busy={loading}>
+        {error && <Alert kind="error">{error}</Alert>}
+        {loading && !items && [0, 1].map((i) => <div key={i} className="skeleton" />)}
+        {items?.length === 0 && (
+          <div className="card empty">
+            <span className="icon-tile"><Icon name="inbox" size={26} /></span>
+            <h2>No reports yet</h2>
+            <p>New reports appear here as soon as they are filed.</p>
+          </div>
+        )}
+        {items && items.length > 0 && <p className="muted small">{items.length} report{items.length === 1 ? "" : "s"}, newest first</p>}
+        {items?.map((it, i) => (
+          <article key={it.id} className="card" style={{ animationDelay: `${Math.min(i, 6) * 50}ms` }}>
+            {it.error ? (
+              <Alert kind="error">{it.error}</Alert>
+            ) : it.report && (
+              <div className="stack">
+                <div className="row" style={{ justifyContent: "space-between" }}>
+                  <span className="badge badge-accent">{it.report.category}</span>
+                  <time className="muted small" dateTime={it.createdAt}>{new Date(it.createdAt).toLocaleString()}</time>
+                </div>
+                <p className="prose">{it.report.description}</p>
+                {(it.report.when || it.report.where) && (
+                  <div className="meta">
+                    {it.report.when && <span><Icon name="clock" size={16} />{it.report.when}</span>}
+                    {it.report.where && <span><Icon name="pin" size={16} />{it.report.where}</span>}
+                  </div>
+                )}
+                <hr className="divider" style={{ margin: 0 }} />
+                <div className="row" style={{ justifyContent: "space-between" }}>
+                  {it.report.contact ? (
+                    <span className="meta"><span><Icon name="user" size={16} />{it.report.contact.name || "No name given"}</span>{it.report.contact.contact && <span>{it.report.contact.contact}</span>}</span>
+                  ) : (
+                    <span className="badge"><Icon name="eyeOff" size={14} />Anonymous to the committee</span>
+                  )}
+                  <span className="mono muted">#{it.id.slice(0, 8)}</span>
+                </div>
+              </div>
+            )}
+          </article>
+        ))}
+      </div>
     </Shell>
   );
 }
