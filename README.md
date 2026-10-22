@@ -62,4 +62,4 @@ Leave `NEXT_PUBLIC_TIDE_MODE` unset and follow [docs/SETUP.md](docs/SETUP.md). T
 
 ## Demo video
 
-[demo/safevoice-demo.mp4](demo/safevoice-demo.mp4)
+[safevoice-demo.mp4](safevoice-demo.mp4)
