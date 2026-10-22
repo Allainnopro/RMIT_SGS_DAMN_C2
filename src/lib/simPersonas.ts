@@ -15,17 +15,19 @@ export const isPersona = (u: unknown): u is Persona => typeof u === "string" && 
 
 /** Distinct IT admins who must approve a committee change: TideCloak's threshold of 0.7 × 3 admins. */
 export const QUORUM = 2;
+export const MIN_PASSWORD_LENGTH = 8;
 
+// Accounts are the seeded personas above plus anyone who creates one (always a reporter).
 export interface ChangeRequest {
   id: string;
-  subject: Persona;
+  subject: string;
   change: "add" | "remove";
-  requestedBy: Persona;
-  approvals: Persona[];
+  requestedBy: string;
+  approvals: string[];
   status: "pending" | "applied";
   createdAt: string;
 }
 export interface SimState {
-  committee: Persona[];
+  committee: string[];
   requests: ChangeRequest[];
 }

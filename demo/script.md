@@ -1,8 +1,8 @@
 # SafeVoice demo video script (2 minutes, Plan C)
 
-Record with the Windows Snipping Tool screen recorder (Win+Shift+R) at 1920×1080, in Edge at http://localhost:3000. One browser is enough: switch persona with **Sign out**, then **Sign in**. Narration is about 250 words; keep each shot short. Save as `demo/safevoice-demo.mp4`, under 100 MB.
+Record with the Windows Snipping Tool screen recorder (Win+Shift+R) at 1920×1080, in Edge at http://localhost:3000. One browser is enough: switch account with **Sign out**, then **Sign in**. The demo accounts' password is `SIM_DEMO_PASSWORD` in the local `.env` file. Narration is about 250 words; keep each shot short. Save as `demo/safevoice-demo.mp4`, under 100 MB.
 
-Before recording: delete `data/store.json` and `data/sim.json` so the inbox and committee start clean, and open the home page once so the intro has played.
+Before recording: delete `data/store.json`, `data/sim.json` and `data/sim-accounts.json` so the inbox, committee and accounts start clean, and open the home page once so the intro has played.
 
 ## 1. The possibility (0:00–0:20)
 
@@ -18,15 +18,15 @@ Before recording: delete `data/store.json` and `data/sim.json` so the inbox and 
 
 ## 3. The prototype (0:35–1:40)
 
-**Screen:** Sign in. The persona page shows the "Plan C" banner.
+**Screen:** Sign in → **Create account**. The page shows the "Plan C" banner.
 
 > Tide's network is under heavy load today, so, as Tide suggested, this demo simulates TideCloak's sign-in and threshold network. The rules are enforced exactly as they would be.
 
-**Screen:** pick **reporter1** → File a report. Choose "Safety hazard", paste the text below, send, show the receipt.
+**Screen:** create the account `minh.tran` with any password of 8+ characters. It lands on File a report. Choose "Safety hazard", paste the text below, send, show the receipt.
 
 > Cửa thoát hiểm tầng 3 tòa nhà 2 bị khóa xích suốt hai tuần. Tôi đã báo quản lý phòng thí nghiệm nhưng không có gì thay đổi.
 
-> A reporter writes in their own language. The report is encrypted right here in the browser before it is sent.
+> A new account can only file reports. They write in their own language, and the report is encrypted right here in the browser before it is sent.
 
 **Screen:** Sign out → **admin1** → Server view.
 

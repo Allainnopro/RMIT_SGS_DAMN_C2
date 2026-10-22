@@ -505,3 +505,6 @@ details > summary::-webkit-details-marker { display: none; }
 .quorum > span:not(.small) { width: 22px; height: 8px; border-radius: 999px; background: #d3e7e3; transition: background-color 300ms linear, transform 420ms var(--spring); }
 .quorum > span.on { background: var(--teal); transform: scaleY(1.25); }
 select.input { appearance: auto; cursor: pointer; }
+.segmented { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 999px; background: var(--mint-soft); border: 1px solid var(--line); }
+.segmented button { min-height: 42px; border: 0; border-radius: 999px; background: transparent; color: var(--fg-muted); font: 700 0.92rem var(--font-body); cursor: pointer; transition: background-color 200ms linear, color 140ms linear, box-shadow 200ms var(--ease-out); }
+.segmented button[aria-pressed="true"] { background: #ffffff; color: var(--teal-ink); box-shadow: 0 6px 16px -10px rgba(15, 118, 110, 0.6); }

@@ -1,25 +1,25 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { type Persona, PERSONAS, QUORUM, type SimState } from "@/lib/simPersonas";
+import { isPersona, PERSONAS, QUORUM, type SimState } from "@/lib/simPersonas";
 import { useAuth } from "../auth";
 import { Icon } from "../icons";
 import { Alert, api, Shell } from "../ui";
 
-const EVERYONE = Object.keys(PERSONAS) as Persona[];
-const name = (p: Persona) => `${PERSONAS[p].label} (${p})`;
+type View = SimState & { accounts?: string[] };
+const name = (u: string) => (isPersona(u) ? `${PERSONAS[u].label} (${u})` : `${u} (new account)`);
 
 /** Plan C admin: committee membership changes only when QUORUM different IT admins approve. */
 export function SimAdmin() {
   const { authenticated, getValueFromIdToken } = useAuth();
   const me = String(getValueFromIdToken("preferred_username") ?? "");
-  const [state, setState] = useState<SimState | null>(null);
-  const [subject, setSubject] = useState<Persona>("admin1");
+  const [state, setState] = useState<View | null>(null);
+  const [subject, setSubject] = useState("admin1");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
   const load = useCallback(async () => {
-    const r = await api<SimState & { error?: string }>("/api/sim/committee");
+    const r = await api<View & { error?: string }>("/api/sim/committee");
     if (r.status === 403) return setError("This page is for university IT admins.");
     if (r.status !== 200) return setError(r.data.error ?? `Could not load the committee (${r.status}).`);
     setState(r.data);
@@ -32,7 +32,7 @@ export function SimAdmin() {
     setBusy(true);
     setError("");
     try {
-      const r = await api<SimState & { error?: string }>("/api/sim/committee", { method: "POST", body: JSON.stringify(body) });
+      const r = await api<View & { error?: string }>("/api/sim/committee", { method: "POST", body: JSON.stringify(body) });
       if (r.status !== 200) throw new Error(r.data.error ?? `That didn't work (${r.status}).`);
       setState(r.data);
     } catch (err) {
@@ -77,8 +77,8 @@ export function SimAdmin() {
           </div>
           <div className="row">
             <label htmlFor="subject" className="sr-only">Account</label>
-            <select id="subject" className="input" style={{ width: "auto", minWidth: 240 }} value={subject} onChange={(e) => setSubject(e.target.value as Persona)}>
-              {EVERYONE.map((p) => <option key={p} value={p}>{name(p)}</option>)}
+            <select id="subject" className="input" style={{ width: "auto", minWidth: 240 }} value={subject} onChange={(e) => setSubject(e.target.value)}>
+              {(state?.accounts ?? Object.keys(PERSONAS)).map((p) => <option key={p} value={p}>{name(p)}</option>)}
             </select>
             <button disabled={busy || !state} onClick={() => send({ op: "propose", subject, change: isMember ? "remove" : "add" })} className="btn btn-primary magnetic">
               <Icon name="key" size={16} />{isMember ? "Propose removing" : "Propose adding"}
@@ -98,7 +98,7 @@ export function SimAdmin() {
           {requests.length === 0 && <p className="muted">No change requests yet.</p>}
           <ul className="checklist" aria-live="polite">
             {requests.map((r) => {
-              const mine = r.approvals.includes(me as Persona);
+              const mine = r.approvals.includes(me);
               return (
                 <li key={r.id} className="request">
                   <div className="stack" style={{ gap: 6 }}>

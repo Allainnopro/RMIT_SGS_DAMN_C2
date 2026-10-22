@@ -1,20 +1,25 @@
 import type { NextRequest } from "next/server";
-import { isPersona, signSession, SIMULATED } from "@/lib/sim";
-import { network, SIM_COOKIE } from "@/lib/simStore";
+import { SIMULATED, validUsername } from "@/lib/sim";
+import { authenticate, SIM_COOKIE, sessionCookie } from "@/lib/simStore";
 
 const off = () => Response.json({ error: "Not found" }, { status: 404 });
 
-// POST /api/sim/login { persona } — Plan C stand-in for Tide sign-in. DELETE signs out.
+// POST /api/sim/login { username, password } — Plan C stand-in for Tide sign-in. DELETE signs out.
 export async function POST(req: NextRequest) {
   if (!SIMULATED) return off();
-  const persona = ((await req.json().catch(() => null)) as { persona?: unknown } | null)?.persona;
-  if (!isPersona(persona)) return Response.json({ error: "Unknown persona" }, { status: 400 });
-  const secure = req.headers.get("x-forwarded-proto") === "https" || req.nextUrl.protocol === "https:";
-  const res = Response.json({ user: persona });
-  res.headers.append(
-    "Set-Cookie",
-    `${SIM_COOKIE}=${signSession(persona, (await network()).secret)}; Path=/; HttpOnly; SameSite=Lax${secure ? "; Secure" : ""}`,
-  );
+  const body = (await req.json().catch(() => null)) as { username?: unknown; password?: unknown } | null;
+  const username = typeof body?.username === "string" ? body.username.trim().toLowerCase() : "";
+  const password = body?.password;
+  // One message for every failure, so the form never reveals which usernames exist.
+  const wrong = () => Response.json({ error: "Wrong username or password." }, { status: 401 });
+  if (!validUsername(username) || typeof password !== "string" || password.length > 200) return wrong();
+  try {
+    if (!authenticate(username, password)) return wrong();
+  } catch (err) {
+    return Response.json({ error: err instanceof Error ? err.message : String(err) }, { status: 500 });
+  }
+  const res = Response.json({ user: username });
+  res.headers.append("Set-Cookie", await sessionCookie(username, req));
   return res;
 }
 

@@ -30,7 +30,7 @@ Tide's network was overloaded during the hackathon, so, per Tide's Plan C, the d
 
 | Live TideCloak (code in this repo) | Plan C simulation (`NEXT_PUBLIC_TIDE_MODE=simulated`) |
 |---|---|
-| Tide sign-in; DPoP-bound JWTs verified by `src/lib/auth/` | Persona picker; an HMAC-signed session the server verifies, carrying the same role and group claims |
+| Tide sign-in and account creation; DPoP-bound JWTs verified by `src/lib/auth/`; the password never reaches our server | Username-and-password sign-in and *Create account*; passwords kept only as salted scrypt hashes; an HMAC-signed session carrying the same role and group claims. Here our server does see the password, which is exactly what live Tide removes |
 | Inbox policies signed on Tide's network; `encryptForRecord` / `decryptForRecord` in `src/lib/tide/relationship.ts` | Reports AES-GCM sealed in the browser; each report key is wrapped for a simulated network that unwraps it only for `/committee` members (`src/app/vault.ts`, `src/app/api/sim/network`) |
 | IGA change requests approved in the Tide enclave | Committee changes need 2 of 3 IT admins (`src/lib/sim.ts`, tested in `tests/sim.test.ts`) |
 
@@ -43,12 +43,13 @@ npm install
 mkdir -p data
 cp scripts/tidecloak.placeholder.json data/tidecloak.json   # only if you have no real adapter file
 echo NEXT_PUBLIC_TIDE_MODE=simulated > .env.local
+echo SIM_DEMO_PASSWORD=pick-your-own-demo-password >> .env.local   # password for the demo accounts
 npm run dev
 ```
 
-Open http://localhost:3000, click **Sign in** and pick a persona:
+Open http://localhost:3000 and click **Sign in**. Create an account, or use a demo account (reporter1, committee1, admin1–3) with `SIM_DEMO_PASSWORD`:
 
-1. **reporter1** files a report.
+1. **Create account**: a new account is a reporter. File a report.
 2. **admin1** opens *Server view* (ciphertext only) and *Committee* (refused). On *Admin*, propose adding admin1 to the committee and approve: 1 of 2, still refused.
 3. **admin2** approves: the change applies.
 4. **committee1** opens *Committee* and reads the report, decrypted in the browser.
