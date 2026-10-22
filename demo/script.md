@@ -1,8 +1,10 @@
-# SafeVoice demo video script (2 minutes, Plan C)
+# SafeVoice demo video script (2 minutes)
 
-Record with the Windows Snipping Tool screen recorder (Win+Shift+R) at 1920×1080, in Edge at http://localhost:3000. One browser is enough: switch account with **Sign out**, then **Sign in**. The demo accounts' password is `SIM_DEMO_PASSWORD` in the local `.env` file. Narration is about 250 words; keep each shot short. Save as `demo/safevoice-demo.mp4`, under 100 MB.
+Record with the Windows Snipping Tool screen recorder (Win+Shift+R) at 1920×1080, in Edge at http://localhost:3000. One browser is enough: switch account with **Sign out**, then **Sign in**. The demo accounts' password is `SIM_DEMO_PASSWORD` in the local `.env` file. Narration is about 260 words; keep each shot short. Save as `demo/safevoice-demo.mp4`, under 100 MB.
 
 Before recording: delete `data/store.json`, `data/sim.json` and `data/sim-accounts.json` so the inbox, committee and accounts start clean, and open the home page once so the intro has played.
+
+The narration explains what TideCloak does at each step. The build shown runs TideCloak's checks in simulation (Tide's Plan C), which the narration says once.
 
 ## 1. The possibility (0:00–0:20)
 
@@ -14,34 +16,34 @@ Before recording: delete `data/store.json`, `data/sim.json` and `data/sim-accoun
 
 **Screen:** keep scrolling to the dark "Who cannot read your report" block.
 
-> Today, whoever administers a reporting system can read every report, and can give themselves access. That administrator usually works for the institution the report is about. So people stay silent.
+> Today, whoever administers a reporting system can read every report, and can give themselves access. That administrator usually works for the institution the report is about. So people stay silent. TideCloak removes that single point of control.
 
 ## 3. The prototype (0:35–1:40)
 
-**Screen:** Sign in → **Create account**. The page shows the "Plan C" banner.
+**Screen:** Sign in → **Create account**.
 
-> Tide's network is under heavy load today, so, as Tide suggested, this demo simulates TideCloak's sign-in and threshold network. The rules are enforced exactly as they would be.
+> Every account is a TideCloak identity, shown here in simulation mode. With TideCloak, your password is checked by Tide's network of independent nodes, so SafeVoice never holds it. A new account can only ever file reports.
 
-**Screen:** create the account `minh.tran` with any password of 8+ characters. It lands on File a report. Choose "Safety hazard", paste the text below, send, show the receipt.
+**Screen:** create the account `minh.tran` with any password of 8+ characters. It lands on File a report. Choose "Safety hazard", paste the sample text (below), send, show the receipt.
 
-> Cửa thoát hiểm tầng 3 tòa nhà 2 bị khóa xích suốt hai tuần. Tôi đã báo quản lý phòng thí nghiệm nhưng không có gì thay đổi.
+Sample text to paste (not narration): Cửa thoát hiểm tầng 3 tòa nhà 2 bị khóa xích suốt hai tuần. Tôi đã báo quản lý phòng thí nghiệm nhưng không có gì thay đổi.
 
-> A new account can only file reports. They write in their own language, and the report is encrypted right here in the browser before it is sent.
+> They write in their own language. The report is encrypted right here in the browser, under a TideCloak policy that lets reporters write to the inbox and nothing more.
 
 **Screen:** Sign out → **admin1** → Server view.
 
-> University IT sees everything the server holds: ciphertext. Readable by this server: zero.
+> University IT sees everything the server holds: ciphertext. The key that opens it isn't here. TideCloak splits that authority across its network, so no server and no admin holds it.
 
 **Screen:** Admin → "Propose adding" admin1 → Approve. Show "1 of 2 approvals". Click Committee: refused.
 
-> Could an admin just add themselves to the committee? They can propose it, and approve it, but one approval changes nothing. They are still locked out until a second admin agrees.
+> Could an admin add themselves to the committee? In TideCloak, every membership change is a change request that needs a quorum of admins. One approval changes nothing: they stay locked out until a second admin agrees.
 
 **Screen:** Sign out → **committee1** → Committee. The report decrypts on screen.
 
-> A committee member opens it, and it is decrypted in their browser, Vietnamese intact.
+> A committee member opens it. TideCloak confirms they belong to the committee before the report is decrypted, in their own browser, Vietnamese intact.
 
 ## 4. What changes (1:40–2:00)
 
 **Screen:** home page, scroll to "Your voice, sealed until the right people read it."
 
-> With TideCloak, confidentiality no longer depends on trusting whoever runs the system. No single admin, server or vendor can open a report or change who reads them. People can speak up safely, and committees hear about problems sooner.
+> With TideCloak, authority over reports only emerges when the right identity, policy and approvals line up. No single admin, server or vendor can open a report or change who reads them. People can speak up safely, and committees hear about problems sooner.
