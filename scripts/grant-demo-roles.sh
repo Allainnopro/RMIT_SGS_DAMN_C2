@@ -11,6 +11,8 @@
 # Usage:
 #   bash scripts/grant-demo-roles.sh --it-admin admin --reporter 'a1b2c3…9f0e' --committee 'd4e5f6…1a2b'
 #   bash scripts/grant-demo-roles.sh --realm-admin '…' --it-admin '…'
+#   bash scripts/grant-demo-roles.sh --create reporter1 --create committee1   # CREATE_USER requests
+#   bash scripts/grant-demo-roles.sh --invite reporter1   # prints the Tide account invite link (after approval)
 #
 # Needs: curl, jq, and KC_BOOTSTRAP_ADMIN_PASSWORD in .env (never printed).
 set -euo pipefail
@@ -55,10 +57,25 @@ user_id() {
   echo "$ids"
 }
 
-realm_role() { # USER_ID ROLE
-  local rep
-  rep=$(curl -sf "$URL/admin/realms/$REALM/roles/$2" -H "Authorization: Bearer $(token)")
-  echo "  realm role $2: HTTP $(api POST "/users/$1/role-mappings/realm" "[$rep]")"
+realm_roles() { # USER_ID ROLE... -> one request, so one change request
+  local id="$1" reps="" r
+  shift
+  for r in "$@"; do
+    reps+="${reps:+,}$(curl -sf "$URL/admin/realms/$REALM/roles/$r" -H "Authorization: Bearer $(token)")"
+  done
+  echo "  realm roles $*: HTTP $(api POST "/users/$id/role-mappings/realm" "[$reps]")"
+}
+create_user() { # USERNAME   (join the committee separately with --committee-group)
+  # The realm requires an email. Use a real plus-address of the operator's own licence email
+  # (never an invented placeholder, AP-85); duplicateEmailsAllowed is on in the realm.
+  : "${TIDE_LICENSE_EMAIL:?TIDE_LICENSE_EMAIL is not set (put it in .env)}"
+  local email="${TIDE_LICENSE_EMAIL%@*}+$1@${TIDE_LICENSE_EMAIL#*@}" body
+  body=$(jq -nc --arg u "$1" --arg e "$email" --arg g "${2:-}" '{username: $u, email: $e, enabled: true} + (if $g == "" then {} else {groups: [$g]} end)')
+  echo "create $1${2:+ in $2}: HTTP $(api POST "/users" "$body")"
+}
+invite() { # USER_ID -> Tide account invite link, valid 12 h
+  curl -s -X POST "$URL/admin/realms/$REALM/tideAdminResources/get-required-action-link?userId=$1&lifespan=43200" \n    -H "Authorization: Bearer $(token)" -H "Content-Type: application/json" -d '["link-tide-account-action"]'
+  echo
 }
 committee() { # USER_ID
   local gid
@@ -76,12 +93,17 @@ realm_admin() { # USER_ID
 while [ $# -gt 0 ]; do
   flag="$1" who="${2:?missing user after $1}"
   shift 2
+  case "$flag" in
+    --create) create_user "$who"; continue ;;
+  esac
   id=$(user_id "$who")
   echo "$flag $who ($id)"
   case "$flag" in
-    --reporter) realm_role "$id" reporter; realm_role "$id" _tide_encryptor ;;
-    --committee) committee "$id"; realm_role "$id" _tide_decryptor ;;
-    --it-admin) realm_role "$id" it-admin ;;
+    --reporter) realm_roles "$id" reporter _tide_encryptor ;;
+    --committee) realm_roles "$id" _tide_decryptor ;;
+    --committee-group) committee "$id" ;;
+    --it-admin) realm_roles "$id" it-admin ;;
+    --invite) invite "$id"; continue ;;
     --realm-admin) realm_admin "$id" ;;
     *) echo "ERROR: unknown flag $flag" >&2; exit 2 ;;
   esac
