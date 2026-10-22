@@ -28,7 +28,7 @@
 |---|---|---|---|
 | Reporter (student or staff) | realm role `reporter` + realm role `_tide_encryptor` | encrypt a report into the inbox | read any report, including their own after submitting |
 | Committee member (3 synthetic) | member of group `/committee` + realm role `_tide_decryptor` | decrypt and read every report | write or forge reports |
-| University IT admin (2 synthetic) | realm role `it-admin` (app access) + `tide-realm-admin` (enclave approvals) | approve setup and governance changes in the Tide enclave | read reports; join the committee without a second admin's approval |
+| University IT admin (3 synthetic: a 2-approval quorum needs 3 admins, because the threshold is max(1, floor(0.7 × admins))) | realm role `it-admin` (app access) + `tide-realm-admin` (enclave approvals) | approve setup and governance changes in the Tide enclave | read reports; join the committee without a second admin's approval |
 | The server | Next.js API routes + `data/store.json` | store and return ciphertext | decrypt anything (it has no key and no user credential) |
 
 ## 4. Policies (built-in contract `RelationshipAttestation:1`, no custom contract)
@@ -67,6 +67,7 @@ Every route goes through the template's `withAuth` / `withRole` wrapper, which v
 | `GET /api/policies/inbox-read` | group `/committee` | signed P2 bytes |
 | `PUT /api/policies/:name` | role `it-admin` | stores signed policy bytes after checking they parse and name the expected record and subject |
 | `GET /api/server-view` | role `it-admin` | the raw store |
+| `GET /api/admin-policy` | role `it-admin` | fetches the realm admin policy (needed to sign P1 and P2) from TideCloak with the caller's token |
 
 **Storage:** `data/store.json` (gitignored), shape `{ reports: [...], policies: { "inbox-write": "...", "inbox-read": "..." } }`. Writes go to a temp file, then rename, so a crash mid-write cannot corrupt the store.
 
@@ -85,7 +86,7 @@ Every route goes through the template's `withAuth` / `withRole` wrapper, which v
 - Docker Desktop installed and running on this machine (local Docker hosting, chosen 2026-10-22).
 - Tide licence email and agreement to Tide's Terms & Conditions (https://tide.org/legal), passed as `TIDE_LICENSE_EMAIL` and `TIDE_TERMS_ACCEPTED=yes`.
 - `KC_BOOTSTRAP_ADMIN_PASSWORD` in `.env` (gitignored), never in a script.
-- Synthetic Tide accounts enrolled in the enclave: 2 admins, 3 committee members, 2 reporters (several can be the same person in separate browser profiles).
+- Synthetic Tide accounts enrolled in the enclave: 3 admins, 3 committee members, 2 reporters (several can be the same person in separate browser profiles).
 
 ## 9. Proof that it works
 
