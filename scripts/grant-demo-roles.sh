@@ -70,8 +70,13 @@ create_user() { # USERNAME   (join the committee separately with --committee-gro
   # (never an invented placeholder, AP-85); duplicateEmailsAllowed is on in the realm.
   : "${TIDE_LICENSE_EMAIL:?TIDE_LICENSE_EMAIL is not set (put it in .env)}"
   local email="${TIDE_LICENSE_EMAIL%@*}+$1@${TIDE_LICENSE_EMAIL#*@}" body
-  body=$(jq -nc --arg u "$1" --arg e "$email" --arg g "${2:-}" '{username: $u, email: $e, enabled: true} + (if $g == "" then {} else {groups: [$g]} end)')
+  body=$(jq -nc --arg u "$1" --arg e "$email" --arg g "${2:-}" '{username: $u, email: $e, enabled: true, attributes: {tideInvitable: ["true"]}} + (if $g == "" then {} else {groups: [$g]} end)')
   echo "create $1${2:+ in $2}: HTTP $(api POST "/users" "$body")"
+}
+invitable() { # USER_ID -> tideInvitable=true (needed before an invite link can be made)
+  local rep
+  rep=$(curl -sf "$URL/admin/realms/$REALM/users/$1" -H "Authorization: Bearer $(token)" | jq -c '.attributes = ((.attributes // {}) + {tideInvitable: ["true"]})')
+  echo "  tideInvitable: HTTP $(api PUT "/users/$1" "$rep")"
 }
 invite() { # USER_ID -> Tide account invite link, valid 12 h
   curl -s -X POST "$URL/admin/realms/$REALM/tideAdminResources/get-required-action-link?userId=$1&lifespan=43200" \
@@ -104,6 +109,7 @@ while [ $# -gt 0 ]; do
     --committee) realm_roles "$id" _tide_decryptor ;;
     --committee-group) committee "$id" ;;
     --it-admin) realm_roles "$id" it-admin ;;
+    --invitable) invitable "$id" ;;
     --invite) invite "$id"; continue ;;
     --realm-admin) realm_admin "$id" ;;
     *) echo "ERROR: unknown flag $flag" >&2; exit 2 ;;
