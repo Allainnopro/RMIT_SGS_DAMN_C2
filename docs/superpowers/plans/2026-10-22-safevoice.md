@@ -6,7 +6,7 @@
 
 **Architecture:** Tide's `nextjs-e2ee-vault` template (login, DPoP, server-side JWT + proof checks, realm bootstrap) with the pack's `relationship-attestation/relationship.ts` helper for per-record encryption under the built-in `RelationshipAttestation:1` contract. TideCloak runs in local Docker. The Next.js server stores only ciphertext and signed policies in `data/store.json`.
 
-**Tech Stack:** Next.js 16, React 19, TypeScript, `@tidecloak/nextjs` 0.14.17 (template pin), `tideorg/tidecloak-dev:latest` in Docker Desktop, vitest for unit tests.
+**Tech Stack:** Next.js 16, React 19, TypeScript, `@tidecloak/nextjs` latest (0.14.40 on 2026-10-22; the template pins 0.14.17), `tideorg/tidecloak-dev:latest` in Docker Desktop, vitest for unit tests.
 
 **Spec:** `docs/superpowers/specs/2026-10-22-safevoice-design.md`
 
@@ -21,6 +21,8 @@
 - Never commit `.env`, `data/tidecloak.json`, `data/store.json`, `data/keycloakdb*`, `.tide-pack/`. The licence email is never written into a committed file.
 - Do not edit the template's protected files (`next.config.ts`, `public/silent-check-sso.html`, `public/tide_dpop_auth.html`, `scripts/init-tidecloak.sh`, `src/app/auth/redirect/page.tsx`, `src/app/providers.tsx`, `src/lib/auth/*`). The one sanctioned edit is `scripts/realm.json.template` (Task 1).
 - Windows: run the bootstrap from Git Bash as `MSYS_NO_PATHCONV=1 bash scripts/init-tidecloak.sh` (not `npm run init`, whose `bash` resolves to WSL with no distro).
+- Versions (organizer, 2026-10-22: "Latest"): image `tideorg/tidecloak-dev:latest`; `@tidecloak/nextjs` at its latest published version, matched to the running container. `public/tide_dpop_auth.html` comes from `node_modules/@tidecloak/js/` (the `tide_dpop_asset` command), never retyped and never from GitHub.
+- A localhost-only prototype is accepted (organizer, 2026-10-22); judges watch the video and read the repo.
 - Approval threshold is `max(1, floor(0.7 × admins))`: **3** `tide-realm-admin` accounts are needed for a 2-approval quorum.
 
 ## Review Focus
@@ -67,9 +69,9 @@ TideCloak runs on this machine only (localhost), so every Tide account action (e
 - [ ] **Step 1:** `cp -R .tide-pack/templates/nextjs-e2ee-vault/. ./ && git checkout -- README.md`; `mkdir -p src/lib/tide && cp .tide-pack/templates/relationship-attestation/relationship.ts src/lib/tide/`.
 - [ ] **Step 2:** Set `"name": "safevoice"` in `package.json`. Ensure `.gitignore` has `.tide-pack/` and `data/store.json` in addition to the template's lines.
 - [ ] **Step 3:** In `scripts/realm.json.template`, add to `roles.realm`: `{ "name": "reporter", "description": "SafeVoice: may file reports" }` and `{ "name": "it-admin", "description": "SafeVoice: university IT admin" }`. Add a top-level `"groups": [{ "name": "committee", "path": "/committee" }]`. Neither goes in the default-roles composite. Run: `node -e "JSON.parse(require('fs').readFileSync('scripts/realm.json.template','utf8').replace(/\\$\\{[A-Z_]+\\}/g,'X'))"` → Expected: no error.
-- [ ] **Step 4:** `npm install`, then `npm ls @tidecloak/js @tideorg/js heimdall-tide`. If any is missing, `npm install` it at the version that `@tidecloak/nextjs@0.14.17` depends on. Run: `npx tsc --noEmit` → Expected: no errors.
+- [ ] **Step 4:** `npm install @tidecloak/nextjs@latest`, then `npm ls @tidecloak/js @tideorg/js heimdall-tide`; install any that is missing at the version `@tidecloak/nextjs` depends on. Replace the DPoP page from the SDK: `cp node_modules/@tidecloak/js/tide_dpop_auth.html public/tide_dpop_auth.html && sha256sum public/tide_dpop_auth.html` → Expected: `9d7844b938f0a2565fa910d3d30e9b8797cbfd6e0b73d59d804169a089aea757`; if the hash differs, keep the SDK's copy and decide by the wire checks from `tide_dpop_asset` plus a real login (Step 8). Run: `npx tsc --noEmit` → Expected: no errors (fix `relationship.ts` imports if the newer SDK moved them).
 - [ ] **Step 5:** `cp .env.example .env` and fill: `KC_BOOTSTRAP_ADMIN_PASSWORD` (generated, strong; tell the user where it is), `TIDE_LICENSE_EMAIL` (the address the user gave in chat), `TIDE_TERMS_ACCEPTED=yes` (the user agreed in chat). Run: `git check-ignore .env` → Expected: `.env`.
-- [ ] **Step 6:** In Git Bash: `MSYS_NO_PATHCONV=1 bash scripts/init-tidecloak.sh`. When it prints the invite link, the user opens it and enrols admin #1. While they do, ask the two questions the pack requires: branding (`tide_branding`) and which new-user details to collect (`tide_onboarding`); apply both answers.
+- [ ] **Step 6:** In Git Bash: `MSYS_NO_PATHCONV=1 bash scripts/init-tidecloak.sh`. If it fails, debug it (superpowers:systematic-debugging); do not hand-configure the realm, because IGA, licensing, mappers and roles must come from the template. When it prints the invite link, the user opens it and enrols admin #1. While they do, ask the two questions the pack requires: branding (`tide_branding`) and which new-user details to collect (`tide_onboarding`); apply both answers.
 - [ ] **Step 7:** Run: `jq '{jwk: has("jwk"), vendorId: has("vendorId"), homeOrkUrl: has("homeOrkUrl")}' data/tidecloak.json` → Expected: all `true`.
 - [ ] **Step 8:** Run `bash .tide-pack/templates/shared/tide-doctor.sh`, then `npm run dev` and `bash .tide-pack/templates/shared/tide-doctor.sh --url http://localhost:3000` → Expected: `RESULT: OK` both times. Then the user logs in at http://localhost:3000.
 - [ ] **Step 9:** Commit `feat: scaffold SafeVoice from Tide e2ee template with committee realm` and push.
@@ -232,7 +234,7 @@ test("anything else is shown as-is", () =>
 
 **Files:** Modify: `README.md` (C is the only writer)
 
-- [ ] **Step 1:** Copy Tide's template from the "Copy README template" button at https://tide.org/unlocked#req-repo to the top of `README.md`. Add the one-sentence description and answer the five prompts from spec §2 and §9: Vision & originality, Trust constraint insight, Value & impact, Why TideCloak matters, Prototype & storytelling.
+- [ ] **Step 1:** Copy the organizer's template to the top of `README.md`: the badge line and headings from https://github.com/truongnguyenxuanvinh/hackathon/blob/main/README.md (same as the "Copy README template" button at https://tide.org/unlocked#req-repo). Add the one-sentence description and answer the five prompts from spec §2 and §9: Vision & originality, Trust constraint insight, Value & impact, Why TideCloak matters, Prototype & storytelling.
 - [ ] **Step 2:** Below the overview add `## Setup` with one line linking to `docs/SETUP.md`, and `## Demo video` linking to `demo/safevoice-demo.mp4`.
 - [ ] **Step 3:** Count the overview's words (everything above `## Setup`). Expected: ≤ 300. Commit `docs: README project overview` and push.
 
