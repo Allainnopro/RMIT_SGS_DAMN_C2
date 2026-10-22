@@ -15,39 +15,58 @@ const CANNOT: ReadonlyArray<readonly [IconName, string]> = [
   ["key", "An admin who adds themselves to the committee without other admins approving"],
 ];
 
+/** The vault: a key that never exists in one place, orbiting the report it protects. */
+function VaultOrb() {
+  return (
+    <div className="orb rise" style={{ "--i": 2 } as React.CSSProperties} aria-hidden="true">
+      <span className="ring ring-1" />
+      <span className="ring ring-2"><span className="sat" /></span>
+      <span className="ring ring-3"><span className="sat" /></span>
+      <span className="orb-core"><Icon name="lock" size={34} /></span>
+    </div>
+  );
+}
+
 export default function HomePage() {
   return (
     <Shell requireAuth={false}>
       <section className="hero">
-        <span className="eyebrow"><Icon name="shield" size={16} /> Confidential reporting</span>
-        <h1>Speak up. Only the committee can listen.</h1>
-        <p className="lead">
-          Report harassment, discrimination or a safety problem knowing it can only be read by the independent committee
-          you are reporting to. Your name is optional, and stays sealed if you include it.
-        </p>
-        <div className="row">
-          <a href="/report" className="btn btn-primary">File a confidential report <Icon name="arrowRight" size={18} /></a>
-          <a href="/committee" className="btn btn-ghost">Committee inbox</a>
+        <div className="hero-copy">
+          <span className="eyebrow rise"><Icon name="shield" size={15} /> Confidential reporting</span>
+          <h1 className="rise" style={{ "--i": 1 } as React.CSSProperties}>
+            <span className="text-gradient">Speak up.</span>
+            <br />
+            Only the committee can listen.
+          </h1>
+          <p className="lead rise" style={{ "--i": 2 } as React.CSSProperties}>
+            Report harassment, discrimination or a safety problem knowing it can only be read by the independent committee
+            you are reporting to. Your name is optional, and stays sealed if you include it.
+          </p>
+          <div className="row rise" style={{ "--i": 3 } as React.CSSProperties}>
+            <a href="/report" className="btn btn-primary magnetic">File a confidential report <Icon name="arrowRight" size={18} /></a>
+            <a href="/committee" className="btn btn-ghost">Committee inbox</a>
+          </div>
         </div>
+        <VaultOrb />
       </section>
 
-      <section aria-labelledby="how" className="stack" style={{ marginBottom: 40 }}>
-        <h2 id="how">How your report stays private</h2>
+      <section aria-labelledby="how" className="stack" style={{ marginBottom: 48 }}>
+        <h2 id="how" className="rise" style={{ "--i": 3 } as React.CSSProperties}>How your report stays private</h2>
         <ol className="grid grid-3" style={{ listStyle: "none", padding: 0, margin: 0 }}>
           {STEPS.map(([icon, title, text], i) => (
-            <li key={title} className="card" style={{ animationDelay: `${i * 60}ms` }}>
-              <div className="card-head" style={{ marginBottom: 12 }}>
+            <li key={title} className="card card-hover rise" style={{ "--i": i + 4 } as React.CSSProperties}>
+              <div className="card-head" style={{ justifyContent: "space-between" }}>
                 <span className="icon-tile"><Icon name={icon} /></span>
                 <span className="step-num" aria-hidden="true">{i + 1}</span>
               </div>
-              <h3 style={{ marginBottom: 6 }}>{title}</h3>
+              <h3 style={{ marginBottom: 8 }}>{title}</h3>
               <p className="muted">{text}</p>
             </li>
           ))}
         </ol>
       </section>
 
-      <section className="card" aria-labelledby="cannot">
+      <section className="card card-light rise" style={{ "--i": 7 } as React.CSSProperties} aria-labelledby="cannot">
         <div className="card-head">
           <span className="icon-tile"><Icon name="eyeOff" /></span>
           <div className="stack" style={{ gap: 4 }}>

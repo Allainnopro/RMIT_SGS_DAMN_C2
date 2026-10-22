@@ -57,8 +57,8 @@ export default function AdminPage() {
 
   return (
     <Shell title="Admin" eyebrow="University IT" intro="Set SafeVoice up once. Every step needs approval in the Tide enclave, so no single admin can change the rules alone.">
-      <div className="stack">
-        <section className="card stack" aria-labelledby="setup">
+      <div className="timeline">
+        <section className="card stack rise" style={{ "--i": 1 } as React.CSSProperties} aria-labelledby="setup">
           <div className="card-head" style={{ marginBottom: 0 }}>
             <span className="step-num" aria-hidden="true">1</span>
             <div className="stack" style={{ gap: 4 }}>
@@ -80,7 +80,7 @@ export default function AdminPage() {
           {error && <Alert kind="error">{error}</Alert>}
           {allDone && <Alert kind="success">Done. Reporters can file and the committee can read.</Alert>}
           <div>
-            <button onClick={setup} disabled={busy} className="btn btn-primary">
+            <button onClick={setup} disabled={busy} className="btn btn-primary magnetic">
               {busy ? <><span className="spinner" aria-hidden="true" />Waiting for approval…</> : <><Icon name="key" size={18} />{allDone ? "Sign the policies again" : "Set up inbox policies"}</>}
             </button>
           </div>
@@ -92,7 +92,7 @@ export default function AdminPage() {
           )}
         </section>
 
-        <section className="card stack" aria-labelledby="membership">
+        <section className="card stack rise" style={{ "--i": 2 } as React.CSSProperties} aria-labelledby="membership">
           <div className="card-head" style={{ marginBottom: 0 }}>
             <span className="step-num" aria-hidden="true">2</span>
             <div className="stack" style={{ gap: 4 }}>

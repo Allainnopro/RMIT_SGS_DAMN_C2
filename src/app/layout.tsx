@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Lexend, Source_Sans_3 } from "next/font/google";
+import { Sora, Source_Sans_3 } from "next/font/google";
 import { Providers } from "./providers";
 import "./globals.css";
 
-const lexend = Lexend({ subsets: ["latin", "vietnamese"], variable: "--font-lexend", display: "swap" });
+const sora = Sora({ subsets: ["latin"], variable: "--font-sora", display: "swap" });
 const sourceSans = Source_Sans_3({ subsets: ["latin", "vietnamese"], variable: "--font-source-sans", display: "swap" });
 
 export const metadata: Metadata = {
@@ -12,13 +12,13 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0f172a",
+  themeColor: "#04060d",
   colorScheme: "dark",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${lexend.variable} ${sourceSans.variable}`}>
+    <html lang="en" className={`${sora.variable} ${sourceSans.variable}`}>
       <body>
         <Providers>{children}</Providers>
       </body>

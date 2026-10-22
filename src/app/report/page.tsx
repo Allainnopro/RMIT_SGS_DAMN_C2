@@ -65,9 +65,9 @@ export default function ReportPage() {
   if (receipt) {
     return (
       <Shell title="Report received">
-        <section className="card stack" style={{ maxWidth: 640 }}>
+        <section className="card card-light stack rise" style={{ maxWidth: 640 }}>
           <div className="card-head" style={{ marginBottom: 0 }}>
-            <span className="icon-tile" style={{ background: "var(--success-bg)", color: "var(--success-text)" }}><Icon name="check" /></span>
+            <span className="icon-tile"><Icon name="check" /></span>
             <div className="stack" style={{ gap: 4 }}>
               <h2>Sent to the committee</h2>
               <p className="muted">It was encrypted on this device. Only committee members can open it.</p>
@@ -99,7 +99,7 @@ export default function ReportPage() {
       eyebrow="Reporter"
       intro="Tell the committee what happened, in any language. Only the independent committee can read it."
     >
-      <form onSubmit={submit} className="card form" style={{ maxWidth: 720 }} aria-busy={busy}>
+      <form onSubmit={submit} className="card form rise" style={{ maxWidth: 760, "--i": 1 } as React.CSSProperties} aria-busy={busy}>
         <Alert kind="info">
           Encrypted on this device before it is sent. University IT, the platform and the server only ever see scrambled data.
         </Alert>
@@ -172,7 +172,7 @@ export default function ReportPage() {
 
         <div className="row" style={{ justifyContent: "space-between" }}>
           <p className="help" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><Icon name="shield" size={16} />Protected by TideCloak</p>
-          <button type="submit" disabled={busy || !description.trim()} className="btn btn-primary">
+          <button type="submit" disabled={busy || !description.trim()} className="btn btn-primary magnetic">
             {busy ? <><span className="spinner" aria-hidden="true" />Encrypting and sending…</> : <><Icon name="send" size={18} />Encrypt and send</>}
           </button>
         </div>

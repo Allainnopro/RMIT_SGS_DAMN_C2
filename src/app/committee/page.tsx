@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { INBOX_RECORD } from "@/lib/constants";
 import { decryptForRecord } from "@/lib/tide/relationship";
 import { describeTideError } from "@/lib/tideErrors";
+import { Scramble } from "../effects";
 import { Icon } from "../icons";
 import { Alert, api, Shell } from "../ui";
 
@@ -80,7 +81,7 @@ export default function CommitteePage() {
         {error && <Alert kind="error">{error}</Alert>}
         {loading && !items && [0, 1].map((i) => <div key={i} className="skeleton" />)}
         {items?.length === 0 && (
-          <div className="card empty">
+          <div className="card empty rise">
             <span className="icon-tile"><Icon name="inbox" size={26} /></span>
             <h2>No reports yet</h2>
             <p>New reports appear here as soon as they are filed.</p>
@@ -88,7 +89,7 @@ export default function CommitteePage() {
         )}
         {items && items.length > 0 && <p className="muted small">{items.length} report{items.length === 1 ? "" : "s"}, newest first</p>}
         {items?.map((it, i) => (
-          <article key={it.id} className="card" style={{ animationDelay: `${Math.min(i, 6) * 50}ms` }}>
+          <article key={it.id} className="card card-hover rise" style={{ "--i": Math.min(i, 6) } as React.CSSProperties}>
             {it.error ? (
               <Alert kind="error">{it.error}</Alert>
             ) : it.report && (
@@ -97,7 +98,7 @@ export default function CommitteePage() {
                   <span className="badge badge-accent">{it.report.category}</span>
                   <time className="muted small" dateTime={it.createdAt}>{new Date(it.createdAt).toLocaleString()}</time>
                 </div>
-                <p className="prose">{it.report.description}</p>
+                <p className="prose"><Scramble text={it.report.description} /></p>
                 {(it.report.when || it.report.where) && (
                   <div className="meta">
                     {it.report.when && <span><Icon name="clock" size={16} />{it.report.when}</span>}

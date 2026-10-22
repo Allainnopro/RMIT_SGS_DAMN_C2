@@ -35,22 +35,22 @@ export default function ServerViewPage() {
         {!store && !error && <div className="skeleton" />}
         {store && (
           <>
-            <div className="grid grid-3">
+            <div className="grid grid-3 rise" style={{ "--i": 1 } as React.CSSProperties}>
               <div className="card">
                 <p className="muted small">Reports stored</p>
-                <p style={{ font: "600 2rem var(--font-heading)" }}>{store.reports.length}</p>
+                <p className="stat text-gradient">{store.reports.length}</p>
               </div>
               <div className="card">
                 <p className="muted small">Readable by this server</p>
-                <p style={{ font: "600 2rem var(--font-heading)", color: "var(--success-text)" }}>0</p>
+                <p className="stat" style={{ color: "var(--success-text)" }}>0</p>
               </div>
               <div className="card">
                 <p className="muted small">Signed policies</p>
-                <p style={{ font: "600 2rem var(--font-heading)" }}>{policies.length}</p>
+                <p className="stat text-gradient">{policies.length}</p>
               </div>
             </div>
 
-            <section className="card stack" aria-labelledby="records">
+            <section className="card stack rise" style={{ "--i": 2 } as React.CSSProperties} aria-labelledby="records">
               <div className="row" style={{ justifyContent: "space-between" }}>
                 <h2 id="records">Stored reports</h2>
                 <span className="badge badge-success"><Icon name="lock" size={14} />All encrypted</span>
@@ -62,7 +62,7 @@ export default function ServerViewPage() {
                     <span className="mono">{r.id}</span>
                     <time className="muted small" dateTime={r.createdAt}>{new Date(r.createdAt).toLocaleString()}</time>
                   </div>
-                  <p className="cipher" aria-label="Encrypted report contents">{r.ciphertext}</p>
+                  <div className="cipher" aria-label="Encrypted report contents"><p className="cipher-text">{r.ciphertext}</p></div>
                 </div>
               ))}
             </section>
