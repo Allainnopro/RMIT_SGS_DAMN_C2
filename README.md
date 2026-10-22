@@ -16,15 +16,15 @@ Today, whoever administers a reporting system can read every report, see who fil
 
 ### 3. Value & impact
 
-A student harassed by a staff member can report it knowing that university IT, faculty leadership and anyone who breaks into the server see only scrambled data. They decide whether to include their name. More reports reach the people who can act, sooner.
+A student harassed by a staff member can report it knowing that university IT, faculty leadership and anyone breaking into the server see only scrambled data. They choose whether to include their name. More reports reach people who can act, sooner.
 
 ### 4. Why TideCloak matters
 
-Each report is encrypted in the reporter's browser under a TideCloak policy (the built-in `RelationshipAttestation:1` contract): reporters may only write to the inbox, and only members of the `/committee` group may decrypt it. Tide's threshold network enforces this at decryption, so our server never holds a key. Changing committee membership is a TideCloak change request that needs a quorum of admins, so no single admin can let themselves in.
+Each report is encrypted in the reporter's browser under a TideCloak policy (built-in `RelationshipAttestation:1`): reporters may only write to the inbox, and only `/committee` members may decrypt it. Tide's threshold network enforces this at decryption, so our server never holds a key. Committee changes are TideCloak change requests needing an admin quorum, so no single admin can let themselves in.
 
 ### 5. Prototype & storytelling
 
-Tide's network was under heavy load during the hackathon, so, following Tide's Plan C, the demo simulates TideCloak's sign-in, roles and threshold network; the server enforces the same rules. Watch a report sealed in the reporter's browser, the server's view showing only ciphertext, and the committee opening it. Then an IT admin proposes adding themselves to the committee: one approval changes nothing, and they stay locked out until a second admin agrees.
+Tide's network was overloaded during the hackathon, so, per Tide's Plan C, the demo simulates TideCloak's sign-in, roles and threshold network; the server enforces the same rules. Watch a report sealed in the reporter's browser, the server seeing only ciphertext, and the committee opening it. An IT admin who proposes adding themselves stays locked out until a second admin approves.
 
 ## How the Plan C simulation maps to TideCloak
 
